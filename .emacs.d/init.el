@@ -504,16 +504,6 @@ uppercase and substitutes - with _."
 ;; ;; This is needed to debug Cygwin programs
 ;; (require 'cygwin-mount)
 ;; (cygwin-mount-activate)
-
-(fset 'next-etracker
-   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([19 47 47 47 47 47 47 13 8388683 8388682 12 12] 0 "%d")) arg)))
-
-(require 'erc)
-(global-set-key "\C-cef" (lambda () (interactive)
-                           (erc :server "irc.freenode.net" :port "6667"
-                                :nick "atjo" :password "lena1234")))
-
-
 ;(require 'w32-print)
 
 (custom-set-variables
