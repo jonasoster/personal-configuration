@@ -1,0 +1,4 @@
+// let xkcd-mode put the funny alt text into the page.
+xkcd_add_title = true;
+
+can_kill_last_buffer = false;
