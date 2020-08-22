@@ -255,8 +255,7 @@ uppercase and substitutes - with _."
 (global-set-key [(control shift u)] 'jonas:read-unicode)
 
 ;; This one's a life-saver
-(iswitchb-mode 1)
-(global-set-key [(super m)] 'iswitchb-buffer)
+(ido-mode)
 
 ;; Save my screen real estate, please
 (tool-bar-mode 0)
