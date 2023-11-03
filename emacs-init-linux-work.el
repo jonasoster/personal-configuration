@@ -1,43 +1,11 @@
 ;;;;; Emacs configuration 
-;;;;; Jonas Öster (CM-DI/PJ-CF31) jonas.oester@de.bosch.com
-
-;; If Emacs is old
-(setq x-select-enable-clipboard t)
+;;;;; Jonas Ã–ster
 
 ;; Start Emacs server
 (server-start)
 
-;; Make sure I can access Cygwin
-;(setenv "PATH" (concat (getenv "PATH")
-;                       ";d:\\sw\\cygwin\\bin"))
-;(add-to-list 'exec-path "d:\\sw\\cygwin\\bin" t)
-;(add-to-list 'exec-path "d:/SW/Subversion Server" t)
-
-;; (setenv "PATH" (concat (getenv "PATH")
-;;                        ";c:\\windows\\Microsoft.NET\\Framework\\v3.5;d:\\sw\\microsoft_sdk\\bin"))
-;; (add-to-list 'exec-path "c:\\windows\\Microsoft.NET\\Framework\\v3.5" t)
-;; (add-to-list 'exec-path "d:\\sw\\microsoft_sdk\\bin" t)
-
-;; Set up my load path
-(setq load-path (cons "~" load-path))
-(setq load-path (cons "~/.emacs.d" load-path))
-;(setq load-path (cons "~/.emacs.d/csharp" load-path))
-;(setq load-path (cons "c:/amb" load-path))
-
-;; Color theme package
-;; (add-to-list 'load-path "~/elisp/color-theme-6.6.0")
-;; (require 'color-theme)
-;; (eval-after-load "color-theme"
-;;   '(progn
-;;      (color-theme-initialize)
-;;      (color-theme-simple-1)))
-
-;; Sensible default keybindings
-;(pc-bindings-mode)
-
-(setq Info-directory-list '("/opt/share/info"))
-
 ;; Show me beautiful colours
+(setq font-lock-maximum-decoration 2)
 (global-font-lock-mode 1)
 
 ;; I will need this to configure keybindings later
@@ -51,9 +19,11 @@
 (setq-default dired-recursive-deletes 'top)
 (setq-default dired-recursive-copies 'always)
 
-;; My rodent sucks, this makes it tolerable
-(setq w32-num-mouse-buttons 2)
-(setq w32-swap-mouse-buttons t)
+;; I want to use all the good stuff
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			 ("gnu" . "https://elpa.gnu.org/packages/")))
+(package-initialize)
 
 ;; Let me see my selection 
 (transient-mark-mode t)
@@ -72,20 +42,14 @@
 (substitute-key-definition
  'newline 'newline-and-indent (current-global-map))
 
-;; ;; Save my poor eyes
-;; (setq jonas:font
-;;       ;; Consolas looks better than DejaVu when ClearType is activated
-;;       "-outline-Consolas-normal-r-normal-normal-16-120-96-96-c-*-iso8859-1")
-;; (set-default-font jonas:font)
-
-;; And make sure new frames have resonable defaults
-;; (push (cons 'font jonas:font) default-frame-alist)
-
 ;; always end a file with a newline
 (setq require-final-newline t)
 
 ;; stop at the end of the file, not just add lines
 (setq next-line-add-newlines nil)
+
+;; Move by logical lines
+(setq line-move-visual nil)
 
 ;; Switch buffers
 (global-set-key [(meta o)]
@@ -132,49 +96,6 @@
 (setq w32-pass-lwindow-to-system nil)
 (setq w32-pass-alt-to-system nil)
 
-;; Skeletons make life easier
-(define-skeleton jonas:c-braces
-  "Insert a pair of braces."
-  nil
-  \n "{" >
-  \n > _
-  \n  "}" >
-  )
-
-(define-skeleton jonas:c-for
-  "Insert a for statement."
-  nil
-  \n "for(" _ ";" _ ";" _ ")" >
-  \n "{" >
-  \n > _
-  \n  "}" >
-  )
-
-(define-skeleton jonas:c-if
-  "Insert an if statement."
-  nil
-  \n "if(" _ ")" >
-  \n "{" >
-  \n > _
-  \n  "}" >
-  )
-
-(define-skeleton jonas:c-doxygen-comment
-  "Insert a Doxygen comment template."
-  nil
-  \n "/*!" >
-  \n "* \\brief "  > _
-  \n  "*/" >
-  )
-
-;; (require 'snippet)
-;; (snippet-with-abbrev-table 'c-mode-abbrev-table
-;;                            ("jfor" . "$>for(int $${i}=$${0};$${i}<$${len};++$${i})\n{$>\n$>$.\n$>}$>"))
-
-(defun jonas:camel-case (s)
-  "CamelCase S."
-  (apply #'concat (split-string (upcase-initials s) "_")))
-
 ;; Stolen from the wiki:
 ;; Copy current buffer path to kill ring C-c n, C-u C-c n copies the folder
 (defun jonas:kill-buffer-file-name (&optional n) 
@@ -199,30 +120,11 @@
         (setq bfn (jonas:windows-file-name bfn)))
     (kill-new bfn)))
 
-
 ;; Show me where I am (C-c w)
 (defun jonas:show-directory ()
   "Show the directory name of the current buffer in the echo area."
   (interactive)
   (message (file-name-directory (buffer-file-name))))
-
-;; Open my diary file for today
-(defun jonas:diary-file ()
-  "Find the file ~/diary/diary-YY-MM-DD.txt."
-  (interactive)
-  (find-file (format-time-string "~/diary/diary-%Y-%m-%d.txt")))
-
-;; Open my working-from-home log file for this month
-(defun jonas:vpn-file ()
-  "Find the file ~/vpn-diary-YY-MM.txt."
-  (interactive)
-  (find-file (format-time-string "~/vpn-diary-%Y-%m.txt"))
-  (goto-char (point-max)))
-
-(defun jonas:vpn-entry ()
-  "Insert an empty vpn log file entry for today's date."
-  (interactive)
-  (insert (format-time-string "%Y-%m-%d: 0:00\n\nempty\n\n")))
 
 ;; Open my todo file
 (defun jonas:todo-file ()
@@ -241,16 +143,6 @@ uppercase and substitutes - with _."
 	 (save-excursion (re-search-forward "[^a-zA-Z-_]" nil 'move) (point))))
     (upcase-region begin end)
     (subst-char-in-region begin end ?- ?_)))
-
-;; Convenient functions for buffer switching
-;(load-library "ska-buffer-switch")
-
-;; Call my create_tags script
-(defun jonas:create-tags (dir)
-  "Call create_tags on directory DIR."
-  (interactive "D")
-  (call-process-shell-command "c:\\jonas\\create_tags\\create_tags.bat" nil nil nil dir)
-  (message "Done!"))
 
 ;; This generally does the right wrt aligning
 (defun jonas:align-around-point ()
@@ -278,7 +170,6 @@ uppercase and substitutes - with _."
         (switch-to-buffer shell-buffer-name)
       (shell))))
 
-
 (defun jonas:set-tab-width-to-3 ()
   "Set the tab width to 3."
   (interactive)
@@ -289,115 +180,37 @@ uppercase and substitutes - with _."
   (interactive)
   (set-variable 'tab-width 4))
 
-;; Clearcase support functions
-(defun jonas:clearcase-check-out ()
-  "Checkout from ClearCase."
-  (interactive)
-  (if buffer-file-name
-      (progn
-        (shell-command (format "cleartool co %s" buffer-file-name))
-        (revert-buffer nil t))
-    (message "Open a file first!")))
+;; Set nice font for my old eyes
+;(set-frame-font "DejaVu Sans Mono-14" nil t)
+(set-frame-font "DejaVu Sans Mono-18" nil t)
 
-(defun jonas:clearcase-check-in ()
-  "Checkin to ClearCase."
-  (interactive)
-  (if buffer-file-name
-      (progn
-        (shell-command (format "cleartool ci %s" buffer-file-name))
-        (revert-buffer nil t))
-    (message "Open a file first!")))
-
-(defun jonas:clearcase-hijack ()
-  "Allah akbar!"
-  (interactive)
-  (if buffer-file-name
-      (progn
-        (shell-command (format "chmod +w %s" buffer-file-name))
-        (revert-buffer nil t))
-    (message "Open a file first!")))
-
-(defun jonas:clearcase-version-tree ()
-  "Start the graphical version tree browser"
-  (interactive)
-  (if buffer-file-name
-      (start-process "lsvtree" nil "cleartool" "lsvtree" "-graphical" buffer-file-name)
-    (message "Open a file first!")))
-
-(global-set-key "\C-cqo" 'jonas:clearcase-check-out)
-(global-set-key "\C-cqi" 'jonas:clearcase-check-in)
-(global-set-key "\C-cqh" 'jonas:clearcase-hijack)
-(global-set-key "\C-cqv" 'jonas:clearcase-version-tree)
-
-(defun jonas:text-bold (str)
-  "Insert a \\textbf command in a Latex file."
-  (interactive "s")
-  (insert "\\textbf{")
-  (insert str)
-  (insert "}"))
+(defun jonas:set-font-size (&optional n)
+  (interactive "P")
+  (if n
+      (set-frame-font "DejaVu Sans Mono-18" nil t)
+    (set-frame-font "DejaVu Sans Mono-14" nil t)))
 
 ;; A few bindings I like
-(global-set-key [(super w)] 'jonas:c-braces)
-(global-set-key [(control super l)] 'jonas:upcase)
-(global-set-key [(control super k)] 'hippie-expand)
-(global-set-key [(control super e)] 'call-last-kbd-macro)
-(global-set-key [(control super a)] 'jonas:align-around-point)
-(global-set-key [(super right)] 'ska-next-buffer)
-(global-set-key [(super left)] 'ska-previous-buffer)
 (global-set-key [(control tab)] 'complete-symbol)
 (global-set-key [S-mouse-2] 'imenu)
 ;;Copy current buffer path to kill ring C-c n, C-u C-c n copies the folder
 (global-set-key "\C-cn"  'jonas:kill-buffer-file-name)
 (global-set-key "\C-cw"  'jonas:show-directory)
-(global-set-key "\C-cd" 'jonas:c-doxygen-comment)
-(global-set-key "\C-cf" 'jonas:c-for)
-(global-set-key "\C-ci" 'jonas:c-if)
 (global-set-key "\C-cb" 'jonas:show-bases)
+(global-set-key "\C-cf" 'jonas:set-font-size)
 (global-set-key "\C-cx" 'jonas:switch-to-shell)
 (global-set-key "\C-c3" 'jonas:set-tab-width-to-3)
 (global-set-key "\C-c4" 'jonas:set-tab-width-to-4)
 (global-set-key "\C-cg" 'revert-buffer)
-(global-set-key [(control super d)] 'jonas:diary-file)
-(global-set-key [(control super v)] 'jonas:vpn-file)
-(global-set-key [(control super b)] 'jonas:vpn-entry)
-(global-set-key [(control super t)] 'jonas:todo-file)
 
-		
-;; I map the useless caps lock key to SUPER.  Key chords with
-;; SUPER+right hand key become very comfortable and should be used for
-;; the most often used functions.  This allows me to leave all
-;; standard Emacs keybindings as they are and still define
-;; easy-to-reach chords with a more sensible geometric layout, for
-;; example the following point movement commands based on VI:
-(global-set-key [(super k)] 'previous-line)
-(global-set-key [(super j)] 'next-line)
-(global-set-key [(super shift k)] 'scroll-down)
-(global-set-key [(super shift j)] 'scroll-up)
-(global-set-key [(super meta k)] 'scroll-down)
-(global-set-key [(super meta j)] 'scroll-up)
-(global-set-key [(super h)] 'backward-char)
-(global-set-key [(super l)] 'forward-char)
-(global-set-key [(super shift h)] 'backward-word)
-(global-set-key [(super shift l)] 'forward-word)
-(global-set-key [(super meta h)] 'backward-word)
-(global-set-key [(super meta l)] 'forward-word)
-;; Sometimes, it seems reasonable to duplicate standard Emacs CTRL key
-;; bindings with SUPER as the modifier:
-(global-set-key [(super ?\s)] 'set-mark-command)
-(global-set-key [(super a)] 'move-beginning-of-line)
-(global-set-key [(super e)] 'move-end-of-line)
-(global-set-key [(super d)] 'delete-char)
-(global-set-key [(super shift d)] 'kill-word)
 (global-set-key [(f11)] 'next-error)
 (global-set-key [(f12)] 'recompile)
-(global-set-key [(f9)] 'gtags-find-tag)
-(global-set-key [(control return)] 'tempo-complete-tag)
-(global-set-key [(super return)] 'tempo-complete-tag)
 ;; This is bound to ^ by default.  Since that is a dead key on most
 ;; European keyboards, I rebind it to r, which seems to be unused by
 ;; dired and is much more comfortable to use.
 (define-key dired-mode-map [(r)] 'dired-up-directory)
 (define-key dired-mode-map [(return)] 'dired-view-file)
+(define-key dired-mode-map [(?\r)] 'dired-view-file)
 
 ;; I never use list-directory, but I often mistype C-x C-d when I want
 ;; dired
@@ -463,47 +276,13 @@ uppercase and substitutes - with _."
     (insert ch)))
 (global-set-key [(control shift u)] 'jonas:read-unicode)
 
-;; Hack for losing Swedish keyboards
-;(global-set-key [2212] '(lambda ()
-;                        (interactive)
-;                        (insert "$")))
-
-;; Support for Blaupunkt
-;(require 'bp)
-
 ;; This one's a life-saver
-(iswitchb-mode 1)
-(global-set-key [(super m)] 'iswitchb-buffer)
-
-;; .pro are usually TTFIS log files in my world
-(setq auto-mode-alist (cons '("\\.pro\\'" . fundamental-mode) auto-mode-alist))
-
-;; .dxl files are somewhat similar to C
-(setq auto-mode-alist (cons '("\\.dxl\\'" . c-mode) auto-mode-alist))
+(ido-mode)
 
 ;; Save my screen real estate, please
 (tool-bar-mode 0)
 (menu-bar-mode 0)
-;(scroll-bar-mode 0)
-
-;; Support for ARM RCVT compiler
-(require 'compile)
-(add-to-list 'compilation-error-regexp-alist
-             '("^\\(.*\\)(\\([0-9]+\\),\\([0-9]+\\))[ \t]*:.*$" 1 2 3))
-(add-to-list 'compilation-error-regexp-alist
-             '("^[ \t]*\\(.*\\)(\\([0-9]+\\)[ \t]*:" 1 2))
-;(require 'ambient)
-
-;; Sometimes, I use Subversion
-;(require 'psvn)
-
-;; ;; Set up paths for grep
-;; (require 'grep)
-;; (setq find-program "d:\\SW\\Emacs\\EmacsW32\\gnuwin32\\bin\\find.exe")
-;; (setq grep-program "d:\\SW\\Emacs\\EmacsW32\\gnuwin32\\bin\\grep.exe")
-
-;; (setq ediff-diff-program  "d:\\SW\\Emacs\\EmacsW32\\gnuwin32\\bin\\diff.exe")
-;; (setq ediff-diff3-program "d:\\SW\\Emacs\\EmacsW32\\gnuwin32\\bin\\diff3.exe")
+(scroll-bar-mode 0)
 
 ;; Ediff is great
 (require 'ediff)
@@ -512,147 +291,37 @@ uppercase and substitutes - with _."
 ;; I don't want a separate frame for the control buffer
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
-;; Do I need this?
-;(put 'upcase-region 'disabled nil)
+;; Get straight to work
+(setq inhibit-splash-screen t)
 
-;; Tempo templates
-(require 'tempo)
-(setq tempo-interactive t)
+;; Keep quiet
+(setq ring-bell-function 'ignore)
 
-(tempo-define-template
-   "jfor"
-   '("for( " (p "expr1:") "; "
-     (p "expr2:") "; "
-     (p "expr3:") " )" n>
-     "{" > n
-     > r n>
-     "}" > %)
-   "jfor")
+(use-package doom-themes
+  ; :init (load-theme 'doom-plain-dark t))
+  :init (load-theme 'doom-palenight t))
 
-(tempo-define-template
-   "jdef"
-   '(& > (p "Type:" type) " " (p "Variable name:" var) " = new " (s type) "();" > n>)
-   "jdef")
+(use-package all-the-icons)
 
-(tempo-define-template
-   "jget"
-   '(& > "private " (p "Type:" type) " " (p "Variable name:" var) ";" n>
-     "public " (s type) " " (jonas:camel-case (tempo-lookup-named 'var)) " {" n>
-     "get { return " (s var) "; }" n
-     "}" > n>)
-   "jget")
+(use-package doom-modeline
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
 
-(tempo-define-template
-   "jgetset"
-   '(& > "private " (p "Type:" type) " " (p "Variable name:" var) ";" n>
-     "public " (s type) " " (jonas:camel-case (tempo-lookup-named 'var)) " {" n>
-     "get { return " (s var) "; }" n>
-     "set { " (s var) " = value; }" n>
-     "}" > n>)
-   "jgetset")
-
-(tempo-define-template
-   "jcall"
-   '(> "<arrow type=\"call\" from=\"" (p "From:" from) "\" to=\"" (p "To:" to) "\">" r "</arrow>" n>
-     "<activate label=\"" (s to) "\"/>" n>
-     "<step/>" n>
-     "" n>
-     "<arrow type=\"return\" from=\"" (s to) "\" to=\"" (s from) "\"/>" n>
-     "<deactivate label=\"" (s to) "\"/>" n>
-     "<step/>")
-   "jcall")
-
-(tempo-define-template
-   "dbitem"
-   '("<listitem>"> n
-     "<para>" > n
-      > r n
-     "</para>" > n
-     "</listitem>" > n)
-   "dbitem")
-
-(tempo-define-template
-   "dblist"
-   '("<itemizedlist>" > n
-     "<listitem>" > n
-     "<para>" > n
-     > r n
-     "</para>" > n
-     "</listitem>" > n
-     "</itemizedlist>" > n)
-   "dblist")
-
-(tempo-define-template
-   "dbsect"
-   '("<section id=\"\">" > n>
-     "<title>" r "</title>" n>
-     "<para>" n
-     "</para>" > n
-     "</section>" > n)
-   "dbsect")
-
-;; (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
-;; (setq auto-mode-alist
-;;    (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
-
-;; (defun jonas-csharp-mode-hook ()
-;;   "C# mode setup"
-;;   (setq c-basic-offset 4)
-;;   ;; C# code completion
-;;   ;; (require 'csharp-completion)
-;;   ;; (csharp-analysis-mode 1)
-;;   ;; (local-set-key "\M-\\"   'cscomp-complete-at-point)
-;;   ;; (local-set-key "\M-\."   'cscomp-complete-at-point-menu)
-;;   )
-
-;; (add-hook 'csharp-mode-hook 'jonas-csharp-mode-hook t)
-
-;; ;; This is needed to debug Cygwin programs
-;; (require 'cygwin-mount)
-;; (cygwin-mount-activate)
-
-;; (fset 'next-etracker
-;;    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([19 47 47 47 47 47 47 13 8388683 8388682 12 12] 0 "%d")) arg)))
-
-;; Help me find my way around
-(require 'xcscope)
-
-;(require 'w32-print)
+(use-package magit
+  :commands magit-status
+  :bind ("C-x g" . magit-status))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(compilation-scroll-output t)
- '(completion-ignored-extensions (quote (".o" "~" ".bin" ".bak" ".obj" ".map" ".ico" ".pif" ".lnk" ".a" ".ln" ".blg" ".bbl" ".dll" ".drv" ".vxd" ".386" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".fasl" ".ufsl" ".fsl" ".pfsl" ".dfsl" ".p64fsl" ".d64fsl" ".dx64fsl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo")))
- '(dired-dwim-target t)
- '(display-buffer-reuse-frames t)
- '(find-dired-find-program "c:/programme/cygwin/bin/find.exe")
- '(font-lock-global-modes (quote (not shell-mode)))
- '(inhibit-startup-screen t)
- '(line-move-visual nil)
- '(mouse-wheel-scroll-amount (quote (5 ((shift) . 1) ((control) . 5))))
- '(noprint-hide-print-in-menus t)
- '(noprint-hide-ps-print-in-menus t)
- '(safe-local-variable-values (quote ((encoding . utf-8))))
- '(show-paren-mode t)
- '(svn-status-prefix-key [(super s)])
- '(truncate-partial-width-windows nil)
- '(user-full-name "Jonas Oester")
- '(user-mail-address "jonas.oester@de.bosch.com"))
-
-(put 'narrow-to-region 'disabled nil)
-;; (custom-set-faces
-;;   ;; custom-set-faces was added by Custom.
-;;   ;; If you edit it by hand, you could mess it up, so be careful.
-;;   ;; Your init file should contain only one such instance.
-;;   ;; If there is more than one, they won't work right.
-;;  '(default ((t (:box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 113 :width normal :foundry "outline" :family "DejaVu Sans Mono")))))
+ '(package-selected-packages
+   (quote
+    (docker-tramp markdown-mode doom-modeline all-the-icons doom-themes use-package transient yaml-mode gnu-elpa-keyring-update magit))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-(put 'erase-buffer 'disabled nil)
