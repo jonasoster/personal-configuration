@@ -1,10 +1,11 @@
 ;;;;; Emacs configuration 
-;;;;; Jonas Öster
+;;;;; Jonas Ã–ster
 
 ;; Start Emacs server
 (server-start)
 
 ;; Show me beautiful colours
+(setq font-lock-maximum-decoration 2)
 (global-font-lock-mode 1)
 
 ;; I will need this to configure keybindings later
@@ -17,6 +18,12 @@
 ;; I know what I'm doing, mostly
 (setq-default dired-recursive-deletes 'top)
 (setq-default dired-recursive-copies 'always)
+
+;; I want to use all the good stuff
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			 ("gnu" . "https://elpa.gnu.org/packages/")))
+(package-initialize)
 
 ;; Let me see my selection 
 (transient-mark-mode t)
@@ -40,6 +47,9 @@
 
 ;; stop at the end of the file, not just add lines
 (setq next-line-add-newlines nil)
+
+;; Move by logical lines
+(setq line-move-visual nil)
 
 ;; Switch buffers
 (global-set-key [(meta o)]
@@ -170,6 +180,17 @@ uppercase and substitutes - with _."
   (interactive)
   (set-variable 'tab-width 4))
 
+;; Set nice font for my old eyes
+;(set-frame-font "DejaVu Sans Mono-14" nil t)
+;(set-frame-font "DejaVu Sans Mono-18" nil t)
+(set-frame-font "Iosevka Comfy Fixed-14" nil t)
+
+(defun jonas:set-font-size (&optional n)
+  (interactive "P")
+  (if n
+      (set-frame-font "Iosevka Comfy Fixed-18" nil t)
+    (set-frame-font "Iosevka Comfy Fixed-14" nil t)))
+
 ;; A few bindings I like
 (global-set-key [(control tab)] 'complete-symbol)
 (global-set-key [S-mouse-2] 'imenu)
@@ -177,10 +198,12 @@ uppercase and substitutes - with _."
 (global-set-key "\C-cn"  'jonas:kill-buffer-file-name)
 (global-set-key "\C-cw"  'jonas:show-directory)
 (global-set-key "\C-cb" 'jonas:show-bases)
+(global-set-key "\C-cf" 'jonas:set-font-size)
 (global-set-key "\C-cx" 'jonas:switch-to-shell)
-(global-set-key "\C-c3" 'jonas:set-tab-width-to-3)
-(global-set-key "\C-c4" 'jonas:set-tab-width-to-4)
+;; (global-set-key "\C-c3" 'jonas:set-tab-width-to-3)
+;; (global-set-key "\C-c4" 'jonas:set-tab-width-to-4)
 (global-set-key "\C-cg" 'revert-buffer)
+(global-set-key "\C-cs" 'toggle-frame-fullscreen)
 
 (global-set-key [(f11)] 'next-error)
 (global-set-key [(f12)] 'recompile)
@@ -189,6 +212,7 @@ uppercase and substitutes - with _."
 ;; dired and is much more comfortable to use.
 (define-key dired-mode-map [(r)] 'dired-up-directory)
 (define-key dired-mode-map [(return)] 'dired-view-file)
+(define-key dired-mode-map [(?\r)] 'dired-view-file)
 
 ;; I never use list-directory, but I often mistype C-x C-d when I want
 ;; dired
@@ -255,12 +279,12 @@ uppercase and substitutes - with _."
 (global-set-key [(control shift u)] 'jonas:read-unicode)
 
 ;; This one's a life-saver
-(ido-mode)
+;(ido-mode)
 
 ;; Save my screen real estate, please
 (tool-bar-mode 0)
 (menu-bar-mode 0)
-;(scroll-bar-mode 0)
+(scroll-bar-mode 0)
 
 ;; Ediff is great
 (require 'ediff)
@@ -269,8 +293,81 @@ uppercase and substitutes - with _."
 ;; I don't want a separate frame for the control buffer
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
-;; Set nice font for my old eyes
-(set-default-font "DejaVu Sans Mono-16")
-
 ;; Get straight to work
 (setq inhibit-splash-screen t)
+
+;; Keep quiet
+(setq ring-bell-function 'ignore)
+
+;; (use-package doom-themes
+;;   ; :init (load-theme 'doom-plain-dark t))
+;;   :init (load-theme 'doom-palenight t))
+
+(use-package ef-themes
+  :ensure t
+  :init (load-theme 'ef-cyprus t))
+
+(use-package spacious-padding
+  :ensure t
+  :init (spacious-padding-mode 1))
+
+(use-package all-the-icons)
+
+(use-package doom-modeline
+  :init (doom-modeline-mode 1))
+
+(use-package magit
+  :commands magit-status
+  :bind ("C-x g" . magit-status))
+
+(use-package company
+  :ensure t)
+
+(use-package vertico
+  :ensure t
+  :init (vertico-mode 1))
+
+(use-package marginalia
+  :ensure t
+  :after vertico
+  :init (marginalia-mode 1))
+
+(use-package rustic
+  :ensure t
+  :config (setq rustic-lsp-client 'eglot))
+
+(use-package auto-dim-other-buffers
+  :ensure t)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("b93039071f490613499b76c237c2624ae67a9aafbc717da9b4d81f456344e56e" "c3e62e14eb625e02e5aeb03d315180d5bb6627785e48f23ba35eb7b974a940af" "a087e01778a85f8381b2aa2b7b0832951aea078621b38844b6c8c8d638d73e3b" "fb7595c9571f2bd41635745d12551f35322296b70330056ddd0020ab2374671c" "9ddb83c12595e789e9abd04a5c0705661748776223a794a6f64669352b956e79" default))
+ '(package-selected-packages
+   '(marginalia vertico spacious-padding ef-themes auto-dim-other-buffers company lsp-ui lsp-mode rustic markdown-mode doom-modeline all-the-icons doom-themes use-package transient yaml-mode gnu-elpa-keyring-update magit)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(fringe ((t :background "#fcf7ef")))
+ '(header-line ((t :box (:line-width 4 :color "#f0ece0" :style nil))))
+ '(header-line-highlight ((t :box (:color "#242521"))))
+ '(keycast-key ((t)))
+ '(line-number ((t :background "#fcf7ef")))
+ '(mode-line ((t :box (:line-width 6 :color "#c0df6f" :style nil))))
+ '(mode-line-active ((t :box (:line-width 6 :color "#c0df6f" :style nil))))
+ '(mode-line-highlight ((t :box (:color "#242521"))))
+ '(mode-line-inactive ((t :box (:line-width 6 :color "#e5e3d8" :style nil))))
+ '(tab-bar-tab ((t :box (:line-width 4 :color "#fcf7ef" :style nil))))
+ '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#c5c3b8" :style nil))))
+ '(tab-line-tab ((t)))
+ '(tab-line-tab-active ((t)))
+ '(tab-line-tab-inactive ((t)))
+ '(vertical-border ((t :background "#fcf7ef" :foreground "#fcf7ef")))
+ '(window-divider ((t (:background "#fcf7ef" :foreground "#fcf7ef"))))
+ '(window-divider-first-pixel ((t (:background "#fcf7ef" :foreground "#fcf7ef"))))
+ '(window-divider-last-pixel ((t (:background "#fcf7ef" :foreground "#fcf7ef")))))
